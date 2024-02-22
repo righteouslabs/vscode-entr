@@ -1,0 +1,114 @@
+{
+    "name": "vscode-entr",
+    "displayName": "Visual Studio Code Entr",
+    "description": "Run Visual Studio Code tasks based on events like file changes",
+    "publisher": "righteouslabs",
+    "icon": "media/icon.png",
+    "version": "1.0.20240218",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/righteouslabs/vscode-entr.git"
+    },
+    "engines": {
+        "vscode": "^1.86.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [],
+    "main": "./dist/extension.js",
+    "contributes": {
+        "taskDefinitions": [
+            {
+                "type": "entr",
+                "required": [
+                    "targetTask"
+                ],
+                "properties": {
+                    "targetTask": {
+                        "type": "string",
+                        "description": "The task to execute"
+                    },
+                    "files": {
+                        "type": "array",
+                        "description": "The file(s) to watch. You can use glob patterns.",
+                        "default": [
+                            "**/*.*"
+                        ],
+                        "minItems": 1,
+                        "uniqueItems": true,
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "ignoreCreateEvents": {
+                        "type": "boolean",
+                        "description": "Whether to ignore create events",
+                        "default": false
+                    },
+                    "ignoreChangeEvents": {
+                        "type": "boolean",
+                        "description": "Whether to ignore change events",
+                        "default": false
+                    },
+                    "ignoreDeleteEvents": {
+                        "type": "boolean",
+                        "description": "Whether to ignore delete events",
+                        "default": false
+                    },
+                    "onlyFiles": {
+                        "type": "boolean",
+                        "description": "Whether to ignore folder level events",
+                        "default": false
+                    },
+                    "pauseMsBeforeRun": {
+                        "type": "number",
+                        "description": "The time to wait in milliseconds before running the task after any file system change is triggered",
+                        "default": 100
+                    },
+                    "runningTaskBehavior": {
+                        "type": "string",
+                        "description": "The behavior to take when the target task is already running. \r\n\r\n If `terminate`, the running task will be terminated and the new task will not be started. Future changes will continue to trigger the target task as long as it is not running. \r\n\r\n If `restart`, the running task will be restarted. \r\n\r\n If 'batch', the new task will be batched with the running task and only execute after the previous run is completed.",
+                        "enum": [
+                            "terminate",
+                            "restart",
+                            "batch"
+                        ],
+                        "default": "batch"
+                    },
+                    "runningTaskBehaviorBatchThrottleSeconds": {
+                        "type": "number",
+                        "description": "The time to wait in seconds before checking if the target task is still running. Only used when runningTaskBehavior is set to 'batch'.",
+                        "default": 30
+                    }
+                }
+            }
+        ],
+        "commands": []
+    },
+    "scripts": {
+        "vscode:prepublish": "yarn run package",
+        "compile": "webpack",
+        "watch": "webpack --watch",
+        "package": "webpack --mode production --devtool hidden-source-map",
+        "compile-tests": "tsc -p . --outDir out",
+        "watch-tests": "tsc -p . -w --outDir out",
+        "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
+        "lint": "eslint src --ext ts",
+        "test": "vscode-test"
+    },
+    "devDependencies": {
+        "@types/mocha": "^10.0.6",
+        "@types/node": "18.x",
+        "@types/vscode": "^1.86.0",
+        "@typescript-eslint/eslint-plugin": "^6.19.1",
+        "@typescript-eslint/parser": "^6.19.1",
+        "@vscode/test-cli": "^0.0.6",
+        "@vscode/test-electron": "^2.3.9",
+        "eslint": "^8.56.0",
+        "ts-loader": "^9.5.1",
+        "typescript": "^5.3.3",
+        "webpack": "^5.90.0",
+        "webpack-cli": "^5.1.4"
+    }
+}

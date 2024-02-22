@@ -1,0 +1,96 @@
+name: Deploy VS Code Extension
+
+on:
+  push:
+    branches:
+      - main
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Cache Node modules
+      uses: actions/cache@v4
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install Dependencies
+      run: yarn install
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        npm_config_arch: ${{ matrix.npm_config_arch }}
+
+    - name: Run Tests
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y xvfb
+        # We need to run tests in a virtual framebuffer to avoid issues with the headless browser
+        xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" npm test
+
+    - name: Adjust Package Version
+      if: github.event_name == 'release'
+      run: |
+        # Get the version from the tag
+        VERSION=${GITHUB_REF#refs/tags/}
+
+        # Set the version in the package.json
+        npm version $VERSION --no-git-tag-version
+
+    - name: Build
+      run: |
+        # Install the VS Code Extension Manager
+        yarn global add "@vscode/vsce"
+
+        # Build the extension
+        npm run "vscode:prepublish"
+
+        # Package the extension into a .vsix file
+        vsce package
+
+        # Set the VSIX_PATH environment variable
+        echo "VSIX_PATH=$(ls *.vsix)" >> $GITHUB_ENV
+        # This is used in the next step to identify the exact file to upload to the release
+
+    - uses: actions/upload-artifact@v4
+      if: success() && github.event_name == 'release'
+      with:
+        name: ${{ env.VSIX_PATH }}
+        path: "*.vsix"
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: build
+    if: success() && github.event_name == 'release'
+    steps:
+      - uses: actions/download-artifact@v4
+
+      # Set the VSIX_PATH environment variable
+      - run: |
+          # Find the .vsix file and ensure only one result is returned
+          VSIX_PATH=$(find . -type f -iname "*.vsix")
+          if [ -z "$VSIX_PATH" ]; then
+            echo "Error: No .vsix file found"
+            exit 1
+          fi
+          echo "VSIX_PATH=$VSIX_PATH" >> $GITHUB_ENV
+
+      - run: npx vsce publish --packagePath $VSIX_PATH
+        env:
+          VSCE_PAT: ${{ secrets.AZ_DEVOPS_TOKEN }}
+
+      - run: npx ovsx publish --packagePath $VSIX_PATH
+        env:
+          OVSX_PAT: ${{ secrets.OPEN_VSX_TOKEN }}
