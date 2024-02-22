@@ -70,3 +70,7 @@ You can download the extension from the [Visual Studio Code Marketplace](https:/
 ## Known Issues
 
 There is a known issue where modifying any files under `.vscode` folder triggers your task 3 times. This is a known issue and is being worked on.
+
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
