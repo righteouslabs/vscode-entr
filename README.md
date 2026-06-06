@@ -1,5 +1,13 @@
 # Extension `vscode-entr` for Visual Studio Code
 
+> ## ⚠️ DEPRECATED — No Longer Maintained
+>
+> This extension is **deprecated as of 2026-06-06** and is no longer maintained.
+>
+> **Reason:** Transitioned to using [Taskfile](https://taskfile.dev/) with [file fingerprinting / watch mode](https://taskfile.dev/docs/guide#watch-tasks) to solve the same use case.
+>
+> The extension has been unpublished from both the Visual Studio Code Marketplace and the Open VSX Registry. The repository is archived for reference only. Issues and pull requests are no longer accepted.
+
 <img src="media/icon.png" height="64px" />
 
 An extension for Visual Studio Code that triggers existing tasks based on file system changes.
